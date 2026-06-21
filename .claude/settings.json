@@ -1,0 +1,59 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx playwright *)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(cat site.config.json)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(curl --silent --head *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(npm test*)",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-test.sh",
+            "timeout": 15,
+            "statusMessage": "Checking site reachability before running tests..."
+          },
+          {
+            "type": "command",
+            "if": "Bash(npx playwright test*)",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-test.sh",
+            "timeout": 15,
+            "statusMessage": "Checking site reachability before running tests..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Edit(src/**/*.ts)|Write(src/**/*.ts)|Edit(tests/**/*.ts)|Write(tests/**/*.ts)",
+            "command": "npx tsc --noEmit --pretty false 2>&1 | head -20",
+            "timeout": 30,
+            "statusMessage": "TypeScript check after file edit..."
+          }
+        ]
+      }
+    ]
+  }
+}

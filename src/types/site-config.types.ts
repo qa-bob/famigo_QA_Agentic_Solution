@@ -80,7 +80,8 @@ export function loadSiteConfig(configDir: string = process.cwd()): SiteConfig {
     return { ...DEFAULT_CONFIG };
   }
 
-  const raw = fs.readFileSync(configPath, 'utf-8');
+  // Strip UTF-8 BOM (U+FEFF) if present — PowerShell and some editors add it
+  const raw = fs.readFileSync(configPath, 'utf-8').replace(/^﻿/, '');
 
   let parsed: Partial<SiteConfig>;
   try {

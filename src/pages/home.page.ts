@@ -45,20 +45,19 @@ export class HomePage extends BasePage {
    * whose text contains common CTA phrases.
    */
   async getCTAButtons(): Promise<Locator[]> {
+    // Only match elements that are already visible — avoids returning hidden nav/offscreen items
     const ctaLocator = this.page.locator(
-      'a[class*="btn"], a[class*="button"], a[class*="cta"], ' +
-      'button[class*="primary"], button[class*="cta"], ' +
-      '[role="button"]'
+      'a[class*="btn"]:visible, a[class*="button"]:visible, a[class*="cta"]:visible, ' +
+      'button[class*="primary"]:visible, button[class*="cta"]:visible, ' +
+      '[role="button"]:visible'
     );
 
     const all = await ctaLocator.all();
 
-    // If CSS class approach yields nothing, fall back to text-match heuristics
     if (all.length === 0) {
-      const textCta = this.page.locator(
-        'a, button'
-      ).filter({
-        hasText: /get started|try free|sign up|contact us|learn more|request demo/i,
+      // Fallback: match visible links/buttons by common CTA text, including FAMIGO-specific copy
+      const textCta = this.page.locator('a:visible, button:visible').filter({
+        hasText: /start making money|get started|try free|sign up|contact us|learn more|request demo/i,
       });
       return textCta.all();
     }
