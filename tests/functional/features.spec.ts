@@ -71,14 +71,15 @@ test.describe('Page Routing @functional', () => {
       }
     });
 
-    await page.goto(siteConfig.url, { waitUntil: 'networkidle' });
+    await page.goto(siteConfig.url, { waitUntil: 'load' });
 
     // The final page should render (not be stuck in a redirect)
     const finalStatus = await page.evaluate(() => document.readyState);
     expect(finalStatus).toBe('complete');
   });
 
-  test('page has no horizontal overflow at desktop viewport @functional', async ({ homePage }) => {
+  test('page has no horizontal overflow at desktop viewport @functional', async ({ homePage }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium-desktop', 'Runs only in the "chromium-desktop" project');
     const isResponsive = await homePage.isResponsive();
     expect(isResponsive, 'No horizontal scroll should be present at desktop viewport width').toBeTruthy();
   });
@@ -132,7 +133,7 @@ test.describe('Creator and Fan Features @functional', () => {
 
 test.describe('Feature Sections @functional', () => {
   test.beforeEach(async ({ page, siteConfig }) => {
-    await page.goto(siteConfig.url, { waitUntil: 'networkidle' });
+    await page.goto(siteConfig.url, { waitUntil: 'load' });
   });
 
   test('page has at least two distinct content sections @functional', async ({ page }) => {
@@ -146,10 +147,7 @@ test.describe('Feature Sections @functional', () => {
   test('all visible images have alt text @functional', async ({ page }) => {
     const images = await page.locator('img:visible').all();
 
-    if (images.length === 0) {
-      console.warn('[functional] No visible <img> elements found on homepage.');
-      return;
-    }
+    test.skip(images.length === 0, 'No visible <img> elements found on homepage');
 
     const imagesWithoutAlt: string[] = [];
     for (const img of images) {
@@ -183,10 +181,7 @@ test.describe('Feature Sections @functional', () => {
       .filter({ hasNot: page.locator('[href*="famigo.com"]') })
       .all();
 
-    if (externalLinks.length === 0) {
-      console.warn('[functional] No external links found on homepage.');
-      return;
-    }
+    test.skip(externalLinks.length === 0, 'No external links found on homepage');
 
     const unsafeLinks: string[] = [];
     for (const link of externalLinks) {
@@ -220,8 +215,8 @@ test.describe('Feature Sections @functional', () => {
 
 test.describe('Footer @functional', () => {
   test.beforeEach(async ({ page, siteConfig }) => {
-    // networkidle ensures the SPA has rendered the bottom section
-    await page.goto(siteConfig.url, { waitUntil: 'networkidle' });
+    // The bottom section is SPA-rendered; 'load' replaces the flaky networkidle wait
+    await page.goto(siteConfig.url, { waitUntil: 'load' });
   });
 
   test('footer is present and visible @functional', async ({ page }) => {
@@ -313,10 +308,7 @@ test.describe('Cookie Consent @functional', () => {
     const banner = page.locator(bannerSelectors).first();
     const bannerVisible = await banner.isVisible().catch(() => false);
 
-    if (!bannerVisible) {
-      // No cookie banner — this test passes vacuously
-      return;
-    }
+    test.skip(!bannerVisible, 'No cookie banner shown');
 
     // If a cookie banner exists, it must have an actionable button
     const acceptButton = banner.locator(
