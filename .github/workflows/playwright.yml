@@ -1,17 +1,8 @@
 name: Playwright Tests
 
+# Manual only: the QA workflow (qa.yml) now runs smoke tests on push/PR and the scheduled suites.
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-  # Allow manual runs from the Actions tab
   workflow_dispatch:
-    inputs:
-      suite:
-        description: 'Test suite to run (smoke | navigation | forms | functional | visual | responsive | all)'
-        required: false
-        default: 'all'
 
 env:
   SITE_URL: https://www.famigo.com
